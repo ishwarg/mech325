@@ -49,22 +49,27 @@ C_xc = 1.5 #properly crowned teeth Shigley p.799
 
 #Contact Stress
 sigma_c = C_p*(w_t*K_o*K_v*K_m*C_s*C_xc/(face_width*dp*I))**(1/2)
+HBc1 = (sigma_c - 23620)/341
 
-HB1 = (sigma_c - 23620)/341
-num_flights = 100
+num_flights = 1000
 time_flights = 4 
 N_L = rpm*time_flights*num_flights
 C_L = 3.4822*N_L**(-0.0602)
-C_H = 1 #FOR PINION ONLY
+C_H = 1 #Since HBp = HBg CH = 1 always
 S_H = 1
 K_T = 1 #assume t < 250F
 C_R = 1 #fail 1 of 100 flights
 
 sigma_c2 = sigma_c*C_L*C_H/(S_H*K_T*C_R)
+HBc2 = (sigma_c2 - 23620)/341
 
-HB2 = (sigma_c2 - 23620)/341
+if HBc2 - 277 < 3: #test if allowable hardness is close to max 1144 steel hardness
+    S_H2 = 277/HBc1
+    HBc2Used = 277
+else:
+    S_H2 = HBc2/HBc1
 
-#NEED TO FIND MATERIALS AND CALCULATE SF BASED ON THAT
+isShGood = bool(1<S_H2<1.5)
 
 print("\nPinion Parameters:")
 print("dp ",dp, "in")
@@ -78,6 +83,60 @@ print("Tangential Force ", w_t, "lb")
 print("Radial Force ", w_r, "lb")
 print("Axial Force ", w_a, "lb")
 print("Contact Stress", sigma_c, "psi")
-print('Hardness - Contact Stress ', HB1, "Brinell")
+print('Hardness - Contact Stress ', HBc1, "Brinell")
 print("Allowable Contact Stress", sigma_c2, "psi")
-print('Hardness - Allowable Contact Stress ', HB2, "Brinell")
+print("Hardness - Allowable Contact Stress ", HBc2, "Brinell")
+print("Safety Factor", S_H2)
+print("Safety Factor is AGMA Acceptable: ", isShGood,"\n")
+
+if 0 < Pd < 16:
+    K_s = 0.4867 + 0.2132/Pd
+else:
+    K_s = 0.5
+
+K_x = 1 #for straight bevel gears
+
+J = float(input("Input J (F15-7 p.800 Shigley): "))
+
+sigma_b = w_t*Pd*K_o*K_v*K_s*K_m/(face_width*K_x*J)
+HBb1 = (sigma_b-2100)/44
+
+if 10**2 < N_L < 10**3:
+    K_L = 2.7
+elif 10**3 < N_L < 3*10**6:
+    K_L = 6.1514*N_L**(-0.1192)
+elif 3*10**6 < N_L < 10**10:
+    K_L = 1.683*N_L**(-0.0323)
+else:
+    K_L = 1.3558*N_L**(-0.0178)
+
+S_F1 = 1
+K_R = C_R
+
+#sigma_b2 = sigma_b*K_L/(S_F1*K_T*K_R)
+sigma_b2 = (44*HBc2Used+2100)*K_L/(S_F1*K_T*K_R)
+HBb2 = (sigma_b2-2100)/44
+
+if HBb2 < HBc2Used:
+    HBb2Used = HBc2Used
+
+S_F2 = HBb2Used/HBb1
+isSfGood = bool(S_F2>S_H2 or 0<S_F2<1.5)
+
+print("\nGear 1 Parameters:")
+print("dp ",dp, "in")
+print("Pd ",Pd, "in")
+print("Np ",Np, "in")
+print("Gamma Lower: ", gamma_lower, "rads")
+print("Gamma Capital ",gamma_capital, "rads")
+print("Face Width ", face_width, "in")
+print("Torque ", T, "lb in")
+print("Tangential Force ", w_t, "lb")
+print("Radial Force ", w_r, "lb")
+print("Axial Force ", w_a, "lb")
+print("Bending Stress", sigma_b, "psi")
+print('Hardness - Bending Stress ', HBb1, "Brinell")
+print("Allowable Bending Stress", sigma_b2, "psi")
+print("Hardness - Allowable Bending Stress ", HBb2, "Brinell")
+print("Safety Factor", S_F2)
+print("Safety Factor is AGMA Acceptable: ", isSfGood)
