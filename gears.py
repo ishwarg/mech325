@@ -52,7 +52,7 @@ sigma_c = C_p*(w_t*K_o*K_v*K_m*C_s*C_xc/(face_width*dp*I))**(1/2)
 HBc1 = (sigma_c - 23620)/341
 
 num_flights = 1000
-time_flights = 10 
+time_flights = 4 
 N_L = rpm*time_flights*num_flights
 C_L = 3.4822*(N_L**(-0.0602))
 C_H = 1 #Since HBp = HBg CH = 1 always
