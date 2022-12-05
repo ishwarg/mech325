@@ -31,13 +31,13 @@ w_a = w_t*m.tan(pressure_angle*m.pi/180)*m.sin(gamma_lower)
 C_p = 2290 #for steel
 I = float(input("Input I (F15-6 p.800 Shigley): ")) #0.065 Shigley F15-6 p.800
 K_o = 1.25 #electric motor input = uniform, propeller = fan = light shock Shigley T15-2 p.797 Mott T9-1 p.378
-Q_v = 7 #arb
-B = 0.25*(12-Q_v)**(2/3)
+Q_v = 11 #arb
+B = 0.25*((12-Q_v)**(2/3))
 A = 50+56*(1-B)
-v_t = m.pi*dp*Np/12
-K_v = ((A+m.sqrt(v_t))/B)**B
+v_t = m.pi*dp*rpm/12
+K_v = ((A+m.sqrt(v_t))/A)**B
 K_mb = 1 #both members straddle mounted Shigley p.799
-K_m = K_mb+0.0036*face_width**2
+K_m = K_mb+0.0036*(face_width**2)
 if face_width >= 0.5:
     C_s = 0.5
 elif 0.5 <= face_width <= 4.5:
@@ -52,9 +52,9 @@ sigma_c = C_p*(w_t*K_o*K_v*K_m*C_s*C_xc/(face_width*dp*I))**(1/2)
 HBc1 = (sigma_c - 23620)/341
 
 num_flights = 1000
-time_flights = 4 
+time_flights = 10 
 N_L = rpm*time_flights*num_flights
-C_L = 3.4822*N_L**(-0.0602)
+C_L = 3.4822*(N_L**(-0.0602))
 C_H = 1 #Since HBp = HBg CH = 1 always
 S_H = 1
 K_T = 1 #assume t < 250F
@@ -63,9 +63,9 @@ C_R = 1 #fail 1 of 100 flights
 sigma_c2 = sigma_c*C_L*C_H/(S_H*K_T*C_R)
 HBc2 = (sigma_c2 - 23620)/341
 
-if HBc2 - 277 < 3: #test if allowable hardness is close to max 1144 steel hardness
-    S_H2 = 277/HBc1
-    HBc2Used = 277
+if HBc2 - 200 < 10: #test if allowable hardness is close to max 1144 steel hardness
+    S_H2 = 200/HBc1
+    HBc2Used = 200
 else:
     S_H2 = HBc2/HBc1
 
